@@ -54,11 +54,10 @@ export default function CodeScreenshot() {
   const [filename, setFilename] = useState("Solution.java");
   const [windowStyle, setWindowStyle] = useState("mac");
   const [copied, setCopied] = useState(false);
+  const [width, setWidth] = useState(900);
 
   const cardRef = useRef(null);
   const colors = THEMES[theme];
-
-  /* ---------- HIGHLIGHTER ---------- */
 
   const highlightCode = (code) => {
     const escape = (s) =>
@@ -68,38 +67,36 @@ export default function CodeScreenshot() {
 
     h = h.replace(
       /(\/\/.*$)/gm,
-      `<span style="color:${colors.comment}">$1</span>`
+      `<span style="color:${colors.comment}">$1</span>`,
     );
     h = h.replace(
       /"(?:\\.|[^"\\])*"|'(?:\\.|[^'\\])*'/g,
-      `<span style="color:${colors.string}">$&</span>`
+      `<span style="color:${colors.string}">$&</span>`,
     );
     h = h.replace(
       LANG_KEYWORDS[language],
-      `<span style="color:${colors.keyword}">$&</span>`
+      `<span style="color:${colors.keyword}">$&</span>`,
     );
     h = h.replace(
       /\b([A-Z][a-zA-Z0-9_]*)\b/g,
-      `<span style="color:${colors.type}">$&</span>`
+      `<span style="color:${colors.type}">$&</span>`,
     );
     h = h.replace(
       /\b([a-zA-Z_]\w*)(?=\()/g,
-      `<span style="color:${colors.method}">$1</span>`
+      `<span style="color:${colors.method}">$1</span>`,
     );
     h = h.replace(/\b\d+\b/g, `<span style="color:${colors.number}">$&</span>`);
 
     return h;
   };
 
-  /* ---------- IMAGE ---------- */
-
   const downloadImage = async () => {
-    const radius = 18;
+    const radius = 26;
     const scale = 2;
 
     const sourceCanvas = await html2canvas(cardRef.current, {
       scale,
-      backgroundColor: colors.bg,
+      backgroundColor: null,
     });
 
     const w = sourceCanvas.width;
@@ -110,7 +107,6 @@ export default function CodeScreenshot() {
     canvas.height = h;
     const ctx = canvas.getContext("2d");
 
-    // Rounded rectangle clip
     ctx.beginPath();
     ctx.moveTo(radius * scale, 0);
     ctx.lineTo(w - radius * scale, 0);
@@ -138,11 +134,8 @@ export default function CodeScreenshot() {
     setTimeout(() => setCopied(false), 1500);
   };
 
-  /* ---------- UI ---------- */
-
   return (
     <div className="min-h-screen bg-slate-900 p-6 flex flex-col items-center gap-6 text-white">
-      {/* Controls */}
       <div className="flex gap-4 flex-wrap">
         <select
           onChange={(e) => setLanguage(e.target.value)}
@@ -178,115 +171,132 @@ export default function CodeScreenshot() {
         />
       </div>
 
-      {/* Code Input */}
       <textarea
         value={code}
         onChange={(e) => setCode(e.target.value)}
-        className="w-full max-w-2xl h-52 bg-slate-800 p-4 font-mono rounded"
+        className="w-full max-w-3xl h-52 bg-slate-800 p-4 font-mono rounded"
       />
 
-      {/* Actions */}
       <div className="flex gap-3">
         <button
           onClick={copyCode}
-          className="bg-slate-700 px-4 py-2 rounded flex gap-2 cursor-pointer"
+          className="bg-slate-700 px-4 py-2 rounded flex gap-2"
         >
           {copied ? <Check size={16} /> : <Copy size={16} />}
           {copied ? "Copied" : "Copy"}
         </button>
         <button
           onClick={downloadImage}
-          className="bg-blue-600 px-4 py-2 rounded flex gap-2 cursor-pointer"
+          className="bg-blue-600 px-4 py-2 rounded flex gap-2"
         >
           <Download size={16} />
           Download
         </button>
+        <input
+          type="range"
+          min="500"
+          max="1200"
+          value={width}
+          onChange={(e) => setWidth(e.target.value)}
+          className="w-60"
+        />
+
+        <span>{width}px</span>
       </div>
 
-      {/* CARD */}
       <div
         ref={cardRef}
         style={{
-          width: "640px",
-          background: colors.bg,
-          borderRadius: "18px",
-          padding: "26px",
-          fontFamily: "Fira Code, monospace",
-          overflow: "hidden",
+          background: "#d0d7de",
+          padding: "28px",
+          width: `${width}px`,
         }}
       >
-        {/* Header */}
         <div
           style={{
-            display: "flex",
-            alignItems: "center",
-            marginBottom: "16px",
+            width: "100%",
+            background: colors.bg,
+            borderRadius: "18px",
+            padding: "26px",
+            fontFamily: "Fira Code, monospace",
+            overflow: "hidden",
+            boxShadow: "0 25px 50px rgba(0,0,0,0.45)",
           }}
         >
-          <div style={{ display: "flex", gap: "8px" }}>
-            {windowStyle === "mac" ? (
-              <>
-                <span
-                  style={{
-                    background: "#ff5f56",
-                    width: 12,
-                    height: 12,
-                    borderRadius: "50%",
-                  }}
-                />
-                <span
-                  style={{
-                    background: "#ffbd2e",
-                    width: 12,
-                    height: 12,
-                    borderRadius: "50%",
-                  }}
-                />
-                <span
-                  style={{
-                    background: "#27c93f",
-                    width: 12,
-                    height: 12,
-                    borderRadius: "50%",
-                  }}
-                />
-              </>
-            ) : (
-              <>
-                <span
-                  style={{ background: "#94a3b8", width: 12, height: 12 }}
-                />
-                <span
-                  style={{ background: "#94a3b8", width: 12, height: 12 }}
-                />
-                <span
-                  style={{ background: "#ef4444", width: 12, height: 12 }}
-                />
-              </>
-            )}
-          </div>
-          <span
+          <div
             style={{
-              marginLeft: "auto",
-              color: "#ffffff",
-              fontSize: "13px",
-              fontWeight: "600",
+              display: "flex",
+              alignItems: "center",
+              marginBottom: "16px",
             }}
           >
-            {filename}
-          </span>
+            <div style={{ display: "flex", gap: "8px" }}>
+              {windowStyle === "mac" ? (
+                <>
+                  <span
+                    style={{
+                      background: "#ff5f56",
+                      width: 12,
+                      height: 12,
+                      borderRadius: "50%",
+                    }}
+                  />
+                  <span
+                    style={{
+                      background: "#ffbd2e",
+                      width: 12,
+                      height: 12,
+                      borderRadius: "50%",
+                    }}
+                  />
+                  <span
+                    style={{
+                      background: "#27c93f",
+                      width: 12,
+                      height: 12,
+                      borderRadius: "50%",
+                    }}
+                  />
+                </>
+              ) : (
+                <>
+                  <span
+                    style={{ background: "#94a3b8", width: 12, height: 12 }}
+                  />
+                  <span
+                    style={{ background: "#94a3b8", width: 12, height: 12 }}
+                  />
+                  <span
+                    style={{ background: "#ef4444", width: 12, height: 12 }}
+                  />
+                </>
+              )}
+            </div>
+
+            <span
+              style={{
+                marginLeft: "auto",
+                color: "#ffffff",
+                fontSize: "13px",
+                fontWeight: "600",
+              }}
+            >
+              {filename}
+            </span>
+          </div>
+
+          <div
+            style={{
+              height: "1px",
+              background: "rgba(255,255,255,0.12)",
+              marginBottom: "14px",
+            }}
+          />
+
+          <pre style={{ margin: 0, color: colors.text, lineHeight: "1.7" }}>
+            <code dangerouslySetInnerHTML={{ __html: highlightCode(code) }} />
+          </pre>
         </div>
-        <div
-          style={{
-            height: "1px",
-            background: "rgba(255, 255, 255, 0.69)",
-            marginBottom: "14px",
-          }}
-        />
-        {/* Code */}
-        <pre style={{ margin: 0, color: colors.text, lineHeight: "1.7" }}>
-          <code dangerouslySetInnerHTML={{ __html: highlightCode(code) }} />
-        </pre>
       </div>
     </div>
   );
