@@ -91,36 +91,12 @@ export default function CodeScreenshot() {
   };
 
   const downloadImage = async () => {
-    const radius = 26;
     const scale = 2;
 
-    const sourceCanvas = await html2canvas(cardRef.current, {
+    const canvas = await html2canvas(cardRef.current, {
       scale,
       backgroundColor: null,
     });
-
-    const w = sourceCanvas.width;
-    const h = sourceCanvas.height;
-
-    const canvas = document.createElement("canvas");
-    canvas.width = w;
-    canvas.height = h;
-    const ctx = canvas.getContext("2d");
-
-    ctx.beginPath();
-    ctx.moveTo(radius * scale, 0);
-    ctx.lineTo(w - radius * scale, 0);
-    ctx.quadraticCurveTo(w, 0, w, radius * scale);
-    ctx.lineTo(w, h - radius * scale);
-    ctx.quadraticCurveTo(w, h, w - radius * scale, h);
-    ctx.lineTo(radius * scale, h);
-    ctx.quadraticCurveTo(0, h, 0, h - radius * scale);
-    ctx.lineTo(0, radius * scale);
-    ctx.quadraticCurveTo(0, 0, radius * scale, 0);
-    ctx.closePath();
-    ctx.clip();
-
-    ctx.drawImage(sourceCanvas, 0, 0);
 
     const link = document.createElement("a");
     link.download = `${filename}.png`;
@@ -207,7 +183,7 @@ export default function CodeScreenshot() {
       <div
         ref={cardRef}
         style={{
-          background: "#d0d7de",
+          background: "#a7baba",
           padding: "28px",
           width: `${width}px`,
         }}
@@ -220,7 +196,7 @@ export default function CodeScreenshot() {
             padding: "26px",
             fontFamily: "Fira Code, monospace",
             overflow: "hidden",
-            boxShadow: "0 25px 50px rgba(0,0,0,0.45)",
+            boxShadow: "0 0 10px 5px rgba(94, 93, 93, 0.7)",
           }}
         >
           <div
