@@ -2,7 +2,7 @@
 
 import { useState, useRef } from "react";
 import { Download, Copy, Check } from "lucide-react";
-import html2canvas from "html2canvas";
+import { toPng } from "html-to-image";
 
 const THEMES = {
   vscode: {
@@ -14,6 +14,7 @@ const THEMES = {
     comment: "#64748b",
     number: "#fb7185",
     text: "#e5e7eb",
+    glow: "rgba(192, 132, 252, 0.4)",
   },
   dracula: {
     bg: "#282a36",
@@ -24,6 +25,7 @@ const THEMES = {
     comment: "#6272a4",
     number: "#bd93f9",
     text: "#f8f8f2",
+    glow: "rgba(255, 121, 198, 0.4)",
   },
   monokai: {
     bg: "#272822",
@@ -34,13 +36,14 @@ const THEMES = {
     comment: "#75715e",
     number: "#ae81ff",
     text: "#f8f8f2",
+    glow: "rgba(249, 38, 114, 0.4)",
   },
 };
 
 const LANG_KEYWORDS = {
   java: /\b(class|public|private|protected|static|final|void|int|char|return|if|else|for|while|new)\b/g,
-  javascript: /\b(function|return|if|else|for|while|const|let|var|new)\b/g,
-  python: /\b(def|return|if|else|elif|for|while|class|import)\b/g,
+  javascript: /\b(function|return|if|else|for|while|const|let|var|new|async|await|import|export|from|default)\b/g,
+  python: /\b(def|return|if|else|elif|for|while|class|import|from|as|with|try|except|finally)\b/g,
 };
 
 export default function CodeScreenshot() {
@@ -54,7 +57,7 @@ export default function CodeScreenshot() {
   const [filename, setFilename] = useState("Solution.java");
   const [windowStyle, setWindowStyle] = useState("mac");
   const [copied, setCopied] = useState(false);
-  const [width, setWidth] = useState(900);
+  const [width, setWidth] = useState(800);
 
   const cardRef = useRef(null);
   const colors = THEMES[theme];
@@ -91,17 +94,23 @@ export default function CodeScreenshot() {
   };
 
   const downloadImage = async () => {
-    const scale = 2;
+    if (!cardRef.current) return;
 
-    const canvas = await html2canvas(cardRef.current, {
-      scale,
-      backgroundColor: null,
-    });
+    try {
+      const dataUrl = await toPng(cardRef.current, {
+        quality: 1,
+        pixelRatio: 3,
+        skipAutoScale: true,
+        cacheBust: true,
+      });
 
-    const link = document.createElement("a");
-    link.download = `${filename}.png`;
-    link.href = canvas.toDataURL("image/png");
-    link.click();
+      const link = document.createElement("a");
+      link.download = `${filename}.png`;
+      link.href = dataUrl;
+      link.click();
+    } catch (err) {
+      console.error("Error generating image:", err);
+    }
   };
 
   const copyCode = () => {
@@ -112,10 +121,10 @@ export default function CodeScreenshot() {
 
   return (
     <div className="min-h-screen bg-slate-900 p-6 flex flex-col items-center gap-6 text-white">
-      <div className="flex gap-4 flex-wrap">
+      <div className="flex gap-4 flex-wrap bg-slate-800 p-4 rounded-xl shadow-lg border border-slate-700">
         <select
           onChange={(e) => setLanguage(e.target.value)}
-          className="bg-slate-800 p-2 rounded"
+          className="bg-slate-700 p-2 rounded border border-slate-600 focus:outline-none focus:ring-2 focus:ring-blue-500"
         >
           <option value="java">Java</option>
           <option value="javascript">JavaScript</option>
@@ -124,7 +133,7 @@ export default function CodeScreenshot() {
 
         <select
           onChange={(e) => setTheme(e.target.value)}
-          className="bg-slate-800 p-2 rounded"
+          className="bg-slate-700 p-2 rounded border border-slate-600 focus:outline-none focus:ring-2 focus:ring-blue-500"
         >
           <option value="vscode">VS Code Dark</option>
           <option value="dracula">Dracula</option>
@@ -133,7 +142,7 @@ export default function CodeScreenshot() {
 
         <select
           onChange={(e) => setWindowStyle(e.target.value)}
-          className="bg-slate-800 p-2 rounded"
+          className="bg-slate-700 p-2 rounded border border-slate-600 focus:outline-none focus:ring-2 focus:ring-blue-500"
         >
           <option value="mac">macOS</option>
           <option value="windows">Windows</option>
@@ -142,7 +151,7 @@ export default function CodeScreenshot() {
         <input
           value={filename}
           onChange={(e) => setFilename(e.target.value)}
-          className="bg-slate-800 p-2 rounded"
+          className="bg-slate-700 p-2 rounded border border-slate-600 focus:outline-none focus:ring-2 focus:ring-blue-500"
           placeholder="Filename"
         />
       </div>
@@ -150,101 +159,108 @@ export default function CodeScreenshot() {
       <textarea
         value={code}
         onChange={(e) => setCode(e.target.value)}
-        className="w-full max-w-3xl h-52 bg-slate-800 p-4 font-mono rounded"
+        className="w-full max-w-3xl h-52 bg-slate-800 p-4 font-mono rounded-lg border border-slate-700 focus:outline-none focus:ring-2 focus:ring-blue-500"
       />
 
-      <div className="flex gap-3">
+      <div className="flex gap-3 items-center">
         <button
           onClick={copyCode}
-          className="bg-slate-700 px-4 py-2 rounded flex gap-2"
+          className="bg-slate-700 hover:bg-slate-600 transition-colors px-4 py-2 rounded-lg flex gap-2 items-center"
         >
           {copied ? <Check size={16} /> : <Copy size={16} />}
           {copied ? "Copied" : "Copy"}
         </button>
         <button
           onClick={downloadImage}
-          className="bg-blue-600 px-4 py-2 rounded flex gap-2"
+          className="bg-blue-600 hover:bg-blue-500 transition-colors px-4 py-2 rounded-lg flex gap-2 items-center"
         >
           <Download size={16} />
-          Download
+          Download Image
         </button>
-        <input
-          type="range"
-          min="500"
-          max="1200"
-          value={width}
-          onChange={(e) => setWidth(e.target.value)}
-          className="w-60"
-        />
-
-        <span>{width}px</span>
+        <div className="flex items-center gap-2 bg-slate-800 p-2 rounded-lg">
+          <input
+            type="range"
+            min="500"
+            max="1200"
+            value={width}
+            onChange={(e) => setWidth(e.target.value)}
+            className="w-40"
+          />
+          <span className="text-sm font-mono">{width}px</span>
+        </div>
       </div>
 
       <div
         ref={cardRef}
         style={{
-          background: "#a7baba",
-          padding: "28px",
+          background: "linear-gradient(135deg, #0f172a 0%, #334155 100%)",
+          padding: "60px 80px",
           width: `${width}px`,
+          display: "flex",
+          justifyContent: "center",
+          alignItems: "center",
+          position: "relative",
+          overflow: "hidden",
         }}
       >
+        {/* Animated-like background glow */}
+        <div 
+          style={{
+            position: "absolute",
+            top: "-10%",
+            left: "-10%",
+            width: "40%",
+            height: "40%",
+            background: "radial-gradient(circle, rgba(99, 102, 241, 0.15) 0%, transparent 70%)",
+            filter: "blur(40px)",
+            pointerEvents: "none"
+          }}
+        />
+        <div 
+          style={{
+            position: "absolute",
+            bottom: "-10%",
+            right: "-10%",
+            width: "40%",
+            height: "40%",
+            background: "radial-gradient(circle, rgba(236, 72, 153, 0.15) 0%, transparent 70%)",
+            filter: "blur(40px)",
+            pointerEvents: "none"
+          }}
+        />
+
         <div
           style={{
             width: "100%",
             background: colors.bg,
-            borderRadius: "18px",
-            padding: "26px",
+            borderRadius: "20px",
+            padding: "28px",
             fontFamily: "Fira Code, monospace",
             overflow: "hidden",
-            boxShadow: "0 0 10px 5px rgba(94, 93, 93, 0.7)",
+            position: "relative",
+            boxShadow: `0 30px 60px rgba(0, 0, 0, 0.5), 0 0 30px ${colors.glow}`,
+            border: "1px solid rgba(255, 255, 255, 0.08)",
           }}
         >
           <div
             style={{
               display: "flex",
               alignItems: "center",
-              marginBottom: "16px",
+              marginBottom: "24px",
             }}
           >
-            <div style={{ display: "flex", gap: "8px" }}>
+            <div style={{ display: "flex", gap: "10px" }}>
               {windowStyle === "mac" ? (
                 <>
-                  <span
-                    style={{
-                      background: "#ff5f56",
-                      width: 12,
-                      height: 12,
-                      borderRadius: "50%",
-                    }}
-                  />
-                  <span
-                    style={{
-                      background: "#ffbd2e",
-                      width: 12,
-                      height: 12,
-                      borderRadius: "50%",
-                    }}
-                  />
-                  <span
-                    style={{
-                      background: "#27c93f",
-                      width: 12,
-                      height: 12,
-                      borderRadius: "50%",
-                    }}
-                  />
+                  <span style={{ background: "#ff5f56", width: 13, height: 13, borderRadius: "50%", boxShadow: "0 0 10px rgba(255, 95, 86, 0.3)" }} />
+                  <span style={{ background: "#ffbd2e", width: 13, height: 13, borderRadius: "50%", boxShadow: "0 0 10px rgba(255, 189, 46, 0.3)" }} />
+                  <span style={{ background: "#27c93f", width: 13, height: 13, borderRadius: "50%", boxShadow: "0 0 10px rgba(39, 201, 63, 0.3)" }} />
                 </>
               ) : (
                 <>
-                  <span
-                    style={{ background: "#94a3b8", width: 12, height: 12 }}
-                  />
-                  <span
-                    style={{ background: "#94a3b8", width: 12, height: 12 }}
-                  />
-                  <span
-                    style={{ background: "#ef4444", width: 12, height: 12 }}
-                  />
+                  <span style={{ background: "#94a3b8", width: 13, height: 13, borderRadius: "2px" }} />
+                  <span style={{ background: "#94a3b8", width: 13, height: 13, borderRadius: "2px" }} />
+                  <span style={{ background: "#ef4444", width: 13, height: 13, borderRadius: "2px" }} />
                 </>
               )}
             </div>
@@ -252,9 +268,11 @@ export default function CodeScreenshot() {
             <span
               style={{
                 marginLeft: "auto",
-                color: "#ffffff",
-                fontSize: "13px",
-                fontWeight: "600",
+                color: "rgba(255, 255, 255, 0.4)",
+                fontSize: "12px",
+                fontWeight: "500",
+                letterSpacing: "0.5px",
+                fontFamily: "Inter, sans-serif"
               }}
             >
               {filename}
@@ -264,12 +282,12 @@ export default function CodeScreenshot() {
           <div
             style={{
               height: "1px",
-              background: "rgba(255,255,255,0.12)",
-              marginBottom: "14px",
+              background: "linear-gradient(90deg, transparent, rgba(255,255,255,0.1) 50%, transparent)",
+              marginBottom: "24px",
             }}
           />
 
-          <pre style={{ margin: 0, color: colors.text, lineHeight: "1.7" }}>
+          <pre style={{ margin: 0, color: colors.text, lineHeight: "1.8", fontSize: "16px", textShadow: "0 0 20px rgba(255,255,255,0.05)" }}>
             <code dangerouslySetInnerHTML={{ __html: highlightCode(code) }} />
           </pre>
         </div>
