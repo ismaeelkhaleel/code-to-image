@@ -102,6 +102,7 @@ export default function CodeScreenshot() {
         pixelRatio: 3,
         skipAutoScale: true,
         cacheBust: true,
+        backgroundColor: "transparent",
       });
 
       const link = document.createElement("a");
@@ -193,53 +194,27 @@ export default function CodeScreenshot() {
       <div
         ref={cardRef}
         style={{
-          background: "linear-gradient(135deg, #0f172a 0%, #334155 100%)",
-          padding: "60px 80px",
+          background: "transparent",
+          padding: "45px",
           width: `${width}px`,
           display: "flex",
           justifyContent: "center",
           alignItems: "center",
           position: "relative",
-          overflow: "hidden",
         }}
       >
-        {/* Animated-like background glow */}
-        <div 
-          style={{
-            position: "absolute",
-            top: "-10%",
-            left: "-10%",
-            width: "40%",
-            height: "40%",
-            background: "radial-gradient(circle, rgba(99, 102, 241, 0.15) 0%, transparent 70%)",
-            filter: "blur(40px)",
-            pointerEvents: "none"
-          }}
-        />
-        <div 
-          style={{
-            position: "absolute",
-            bottom: "-10%",
-            right: "-10%",
-            width: "40%",
-            height: "40%",
-            background: "radial-gradient(circle, rgba(236, 72, 153, 0.15) 0%, transparent 70%)",
-            filter: "blur(40px)",
-            pointerEvents: "none"
-          }}
-        />
 
         <div
           style={{
             width: "100%",
             background: colors.bg,
-            borderRadius: "20px",
-            padding: "28px",
+            borderRadius: "16px",
+            padding: "24px 32px",
             fontFamily: "Fira Code, monospace",
             overflow: "hidden",
             position: "relative",
-            boxShadow: `0 30px 60px rgba(0, 0, 0, 0.5), 0 0 30px ${colors.glow}`,
-            border: "1px solid rgba(255, 255, 255, 0.08)",
+            boxShadow: `0 20px 50px rgba(0, 0, 0, 0.7), 0 0 20px ${colors.glow}, 0 0 50px ${colors.glow}`,
+            border: "1px solid rgba(255, 255, 255, 0.15)",
           }}
         >
           <div
