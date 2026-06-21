@@ -54,7 +54,7 @@ export default function CodeScreenshot() {
 }`);
   const [theme, setTheme] = useState("vscode");
   const [language, setLanguage] = useState("java");
-  const [filename, setFilename] = useState("Solution.java");
+  const [filename, setFilename] = useState("@visual.algorithms");
   const [windowStyle, setWindowStyle] = useState("mac");
   const [copied, setCopied] = useState(false);
   const [width, setWidth] = useState(800);
@@ -244,8 +244,8 @@ export default function CodeScreenshot() {
               style={{
                 marginLeft: "auto",
                 color: "rgba(255, 255, 255, 0.4)",
-                fontSize: "12px",
-                fontWeight: "500",
+                fontSize: "17px",
+                fontWeight: "600",
                 letterSpacing: "0.5px",
                 fontFamily: "Inter, sans-serif"
               }}
